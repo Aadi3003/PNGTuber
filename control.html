@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PNGTuber Control</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 30px;
+      -webkit-app-region: drag;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      -webkit-app-region: drag;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>PNGTuber Control</h2>
+
+  <button onclick="start()">Start</button>
+  <button onclick="stop()">Stop</button>
+  <button onclick="exit()">Exit</button>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    function start() {
+      ipcRenderer.send('start-avatar');
+    }
+
+    function stop() {
+      ipcRenderer.send('stop-avatar');
+    }
+
+    function exit() {
+      ipcRenderer.send('exit-app');
+    }
+  </script>
+
+</body>
+</html>
