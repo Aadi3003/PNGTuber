@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PNGTuber Control</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 30px;
+      -webkit-app-region: drag;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      -webkit-app-region: no-drag; /* ✅ FIXED */
+    }
+  </style>
+</head>
+<body>
+
+  <h2>PNGTuber Control</h2>
+
+  <button onclick="start()">Start</button>
+  <button onclick="stop()">Stop</button>
+  <button onclick="setIdle()">Set Idle</button>
+  <button onclick="setTalk()">Set Talk</button>
+  <button onclick="exit()">Exit</button>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    function start() {
+      ipcRenderer.send('start-avatar');
+    }
+
+    function stop() {
+      ipcRenderer.send('stop-avatar');
+    }
+
+    function exit() {
+      ipcRenderer.send('exit-app');
+    }
+
+    async function setIdle() {
+      const path = await ipcRenderer.invoke('select-idle');
+      if (path) ipcRenderer.send('update-idle', path);
+    }
+
+    async function setTalk() {
+      const path = await ipcRenderer.invoke('select-talk');
+      if (path) ipcRenderer.send('update-talk', path);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "pngtuber",
+  "version": "1.0.0",
+  "description": "Simple PNGTuber app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "pngtuber.app",
+    "productName": "PNGTuber",
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}
