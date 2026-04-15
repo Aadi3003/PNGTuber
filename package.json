@@ -1,21 +1,39 @@
 {
   "name": "pngtuber",
-  "version": "1.0.0",
-  "description": "Simple PNGTuber app",
+  "version": "1.1.0",
+  "description": "Voice-reactive PNGTuber desktop app",
   "main": "main.js",
+  "author": "Wolvox",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
   },
   "build": {
-    "appId": "pngtuber.app",
+    "appId": "com.pngtuber.app",
     "productName": "PNGTuber",
+    "files": [
+      "**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/electron/dist/ffmpeg.dll",
+        "to": "ffmpeg.dll"
+      }
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
     "win": {
       "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
     }
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.0.0"
+    "electron-builder": "^24.13.3"
   }
 }
