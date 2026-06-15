@@ -17,7 +17,8 @@ function createWindows() {
     resizable: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      backgroundThrottling: false
     }
   });
 
@@ -32,7 +33,8 @@ function createWindows() {
     show: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      backgroundThrottling: false
     }
   });
 
@@ -45,18 +47,25 @@ function createWindows() {
     const defaultIdle = path.join(__dirname, 'assets', 'idle.png');
     const defaultTalk = path.join(__dirname, 'assets', 'talk.png');
 
-    const idlePath = config.idle || defaultIdle;
-    const talkPath = config.talk || defaultTalk;
+    const idlePath =
+      config.idle &&
+      fs.existsSync(config.idle)
+        ? config.idle
+        : defaultIdle;
 
-    // Save defaults if first run
-    if (!config.idle && !config.talk) {
-      saveConfig({ idle: idlePath, talk: talkPath });
-    }
+    const talkPath =
+      config.talk &&
+      fs.existsSync(config.talk)
+        ? config.talk
+        : defaultTalk;
 
     sendImage('set-idle', idlePath);
     sendImage('set-talk', talkPath);
   });
 }
+
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
 
 app.whenReady().then(createWindows);
 
@@ -129,6 +138,30 @@ ipcMain.on('update-talk', (_, filePath) => {
   sendImage('set-talk', dest);
 });
 
+// Mic Threshold / Sensitivity slider
+ipcMain.on('set-threshold', (_, value) => {
+  avatarWindow.webContents.send('update-threshold', value);
+});
+
+// Mic label
+ipcMain.handle('get-mics', async () => {
+  return avatarWindow.webContents.executeJavaScript(`
+    navigator.mediaDevices.enumerateDevices()
+      .then(devices =>
+        devices
+          .filter(d => d.kind === 'audioinput')
+          .map(d => ({
+            deviceId: d.deviceId,
+            groupId: d.groupId,
+            label: d.label
+          }))
+      )
+  `);
+});
+
+ipcMain.on('change-mic', (_, deviceId) => {
+  avatarWindow.webContents.send('change-mic', deviceId);
+});
 
 // 🔥 SEND IMAGE AS BASE64 (KEY FIX)
 function sendImage(channel, filePath) {
@@ -142,7 +175,7 @@ function sendImage(channel, filePath) {
       `data:${mime};base64,${imageData}`
     );
   } catch (err) {
-    console.error("Image load error:", err);
+  console.error("Image load error:", err);
   }
 }
 

@@ -11,8 +11,13 @@
   "build": {
     "appId": "com.pngtuber.app",
     "productName": "PNGTuber",
+    
     "files": [
-      "**/*"
+      "**/*",
+      "assets/**/*"
+    ],
+    "asarUnpack": [
+      "assets/**/*"
     ],
     "extraResources": [
       {
@@ -20,9 +25,6 @@
         "to": "ffmpeg.dll"
       }
     ],
-    "directories": {
-      "buildResources": "assets"
-    },
     "win": {
       "target": "nsis"
     },

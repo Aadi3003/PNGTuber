@@ -16,6 +16,15 @@
       font-size: 16px;
       -webkit-app-region: no-drag; /* ✅ FIXED */
     }
+
+    select {
+      width: 220px;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      -webkit-app-region: no-drag;
+    }
   </style>
 </head>
 <body>
@@ -27,6 +36,32 @@
   <button onclick="setIdle()">Set Idle</button>
   <button onclick="setTalk()">Set Talk</button>
   <button onclick="exit()">Exit</button>
+  <button onclick="toggleSettings()">Settings</button>
+
+  <div id="settings" style="display:none;">
+    <h3>Microphone</h3>
+  
+    <label>Current Microphone:</label>
+    <br> 
+
+    <select id="micList" onchange="changeMic()">
+    </select>
+    
+    <br><br>
+    <label>Selected Sensitivity:</label>
+    <br>
+
+    <input
+      type="range"
+      min="10"
+      max="100"
+      value="45"
+      id="sensitivity"
+      oninput="updateSensitivity(this.value)"
+    >
+
+    <span id="sensValue">45</span>
+  </div>
 
   <script>
     const { ipcRenderer } = require('electron');
@@ -51,6 +86,65 @@
     async function setTalk() {
       const path = await ipcRenderer.invoke('select-talk');
       if (path) ipcRenderer.send('update-talk', path);
+    }
+
+    function toggleSettings() {
+      const settings = document.getElementById('settings');
+
+      if (settings.style.display === 'none') {
+        settings.style.display = 'block';
+      } else {
+        settings.style.display = 'none';
+      }
+    }
+
+    function updateSensitivity(value) {
+      document.getElementById('sensValue').textContent = value;
+
+      ipcRenderer.send('set-threshold', Number(value));
+    }
+
+    window.onload = async () => {
+      const devices = await ipcRenderer.invoke('get-mics');
+
+      const micList = document.getElementById('micList');
+
+      const seenGroups = new Set();
+
+      devices.forEach(mic => {
+
+        if (
+          mic.groupId &&
+          seenGroups.has(mic.groupId)
+        ) {
+          return;
+        }
+
+        if (mic.groupId) {
+          seenGroups.add(mic.groupId);
+        }
+
+        const option = document.createElement('option');
+
+        const label = mic.label || "Unknown Microphone";
+
+        option.value = mic.deviceId;
+        option.textContent = label;
+        option.title = label;
+
+        micList.appendChild(option);
+      });
+    };
+
+    function changeMic() {
+      const micList = document.getElementById('micList');
+
+      const micId = micList.value;
+
+      document.getElementById('currentMic').textContent =
+        micList.selectedOptions[0].textContent;
+
+      ipcRenderer.send('change-mic', micId);
     }
   </script>
 

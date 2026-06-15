@@ -2,6 +2,8 @@ const { ipcRenderer } = require('electron');
 
 const avatar = document.getElementById("avatar");
 
+let currentMicId = null;
+
 let audioContext;
 let analyser;
 let dataArray;
@@ -19,7 +21,7 @@ let talkSrc = "assets/talk.png";
 let currentTalkingState = false;
 
 // 🔧 Tune these
-const THRESHOLD = 35;
+let THRESHOLD = 45;
 const HOLD_TIME = 200;
 const SMOOTHING = 0.7;
 const REQUIRED_FRAMES = 20;
@@ -34,30 +36,59 @@ function updateAvatar(isTalking) {
 
 
 // 🎤 Start mic
-async function start() {
+async function start(deviceId = null) {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    if (streamRef) {
+      streamRef.getTracks().forEach(track => track.stop());
+    }
+
+    if (audioContext) {
+      await audioContext.close();
+    }
+
+    const constraints = {
+      audio: deviceId
+        ? {
+            deviceId: {
+              exact: deviceId
+            }
+          }
+        : true
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
     streamRef = stream;
+    currentMicId = deviceId;
 
     audioContext = new AudioContext();
+
     analyser = audioContext.createAnalyser();
 
-    const source = audioContext.createMediaStreamSource(stream);
+    const source =
+      audioContext.createMediaStreamSource(stream);
+
     source.connect(analyser);
 
     analyser.fftSize = 256;
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    loop();
+    dataArray =
+      new Uint8Array(analyser.frequencyBinCount);
+
   } catch (err) {
     console.error("Mic error:", err);
   }
 }
 
-
 // 🔁 Loop
 function loop() {
   if (!running) return;
+
+  if (!analyser || !dataArray) {
+    requestAnimationFrame(loop);
+    return;
+  }
 
   analyser.getByteFrequencyData(dataArray);
 
@@ -107,6 +138,15 @@ ipcRenderer.on('set-talk', (_, dataUrl) => {
   updateAvatar(currentTalkingState);
 });
 
+// mic threshold / senstivity
+ipcRenderer.on('update-threshold', (_, value) => {
+  THRESHOLD = value;
+});
+
+// mic label
+ipcRenderer.on('change-mic', (_, deviceId) => {
+  start(deviceId);
+});
 
 // 🧹 Cleanup
 function cleanup() {
@@ -124,3 +164,4 @@ ipcRenderer.on('cleanup', cleanup);
 
 // 🚀 Start
 start();
+loop();
