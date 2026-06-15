@@ -1,142 +1,114 @@
-# 🎭 PNGTuber App (v1.1)
+# PNGTuber App
+A lightweight PNGTuber desktop application built with Electron.
 
-A mic-reactive PNGTuber desktop app built with Electron.
+The app listens to microphone input in real time and automatically switches between idle and talking sprites, allowing users to create a simple reactive avatar for streaming, recording, or online calls.
 
-Your avatar reacts to your voice in real-time — switching between idle and talking states with smooth animation and instant updates.
+## Features
+* Real-time microphone-based voice detection
+* Automatic idle / talking sprite switching
+* Live avatar updates without restarting the application
+* Custom idle and talking image selection
+* Persistent avatar configuration between launches
+* Adjustable microphone sensitivity
+* Microphone selection from available input devices
+* Transparent avatar window for OBS integration
+* Lightweight control panel for managing settings
+* Portable Windows build
 
----
+## Download
+Download the latest release from the Releases section.
 
-## ✨ Features
+Available package:
+* `PNGTuber Setup.exe`
 
-* 🎤 Real-time mic-based voice detection
-* 🎭 Idle / Talking sprite switching
-* ⚡ Instant image switching (no restart needed)
-* 💾 Persistent avatar (remembers your images after restart)
-* 🌊 Smooth animation (no flickering)
-* 🎛️ Control panel (start / stop / exit)
-* 🧊 Transparent avatar window (OBS-ready)
-* 📂 Built-in image selector (no manual file editing)
+## Usage
+1. Launch the application.
+2. Click **Start** to display the avatar.
+3. Select custom idle and talking images if desired.
+4. Choose the microphone you want to use.
+5. Adjust sensitivity if needed.
+6. Speak into the selected microphone.
 
----
+The avatar will automatically switch between idle and talking states based on detected audio input.
 
-## 🆕 What’s New in v1.1
+## OBS Setup
+1. Open OBS Studio.
+2. Add a **Window Capture** source.
+3. Select the PNGTuber avatar window.
+4. Position and resize as desired.
 
-* 🔥 Fixed avatar not updating instantly after selecting images
-* 💾 Added persistent storage for idle/talk sprites
-* 🧠 Default avatar loads on first launch (no empty screen)
-* 🛠️ Improved voice detection stability
-* 🖼️ Image handling no longer breaks if original files are moved/deleted
-
----
-
-## 📦 Download (For Users)
-
-👉 Go to **Releases** and download:
-
-* `pngtuber.exe` (portable, no installation required)
-
----
-
-## ▶️ How to Use
-
-1. Open the app
-2. Click **Start**
-3. Click buttons to select:
-
-   * Idle image
-   * Talking image
-4. Speak into your microphone
-
----
-
-## 🎥 Using with OBS
-
-1. Open OBS
-2. Add **Window Capture**
-3. Select:
-
-   ```
-   PNGTuberAvatar
-   ```
-4. Resize and position as needed
-
----
-
-## 🛠️ For Developers
-
+## Development
 ### Requirements
-
 * Node.js
+* npm
 
----
-
-### Setup
-
+### Install
 ```bash
 npm install
+```
+
+### Run
+```bash
 npm start
 ```
 
----
-
-## 🏗️ Build
-
+### Build
 ```bash
 npm run build
 ```
 
-The packaged app will be inside:
-
-```
+Build output will be generated inside:
+```text
 dist/
 ```
 
----
-
-## 📁 Project Structure
-
-```
+## Project Structure
+```text
 pngtuber/
-├── main.js
-├── index.html
+├── assets/
+│   ├── idle.png
+│   └── talk.png
 ├── control.html
-├── script.js
+├── index.html
+├── main.js
 ├── package.json
-└── assets/
-    ├── idle.png
-    └── talk.png
+└── script.js
 ```
 
----
-
-## ⚙️ Customization
-
-You can tweak voice sensitivity in `script.js`:
+## Configuration
+Voice detection behaviour can be adjusted through the application's sensitivity control.
+Advanced users can further modify detection logic within:
 
 ```js
-const THRESHOLD = 35;
-const REQUIRED_FRAMES = 20;
-const HOLD_TIME = 200;
-const SMOOTHING = 0.7;
+THRESHOLD
+REQUIRED_FRAMES
+HOLD_TIME
+SMOOTHING
 ```
 
----
+inside `script.js`.
 
-## 🚧 Notes
+## Notes
+* Microphone permission is required.
+* Custom avatar images are copied into the application's user data folder.
+* Avatar settings persist between sessions.
+* Built using Electron (Chromium + Node.js).
 
-* Microphone permission is required for the app to function
-* Images selected are stored internally (safe from deletion/moving)
-* If OBS doesn’t detect the window, reselect it via Window Capture
-* Built with Electron (Node.js + Chromium runtime)
+## Changelog
+### v1.2
+- Added microphone selection dropdown
+- Added live microphone label display
+- Added sensitivity slider in the control panel
+- Fixed packaged-build asset loading issues
 
----
-
-## 🚀 Future Ideas
-
-* 🎛️ Sensitivity slider in UI
-* 🎭 Multiple expressions (happy, angry, etc.)
-* ✨ Smooth transitions between sprites
-* 🖱️ Draggable avatar window
-* ⌨️ Hotkey-based expression switching
-
----
+### v1.1
+- Built-in image selection for custom avatars
+- Added persistent avatar storage
+- Improved voice detection stability
+- Image handling no longer breaks if original files are moved/deleted
+  
+### v1.0
+- Real-time microphone-based voice detection
+- Idle / talking sprite switching
+- OBS-compatible window capture
+- Basic idle and talking animations
