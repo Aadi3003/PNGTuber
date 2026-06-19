@@ -1,9 +1,9 @@
 {
   "name": "pngtuber",
-  "version": "1.1.0",
-  "description": "Voice-reactive PNGTuber desktop app",
+  "version": "1.3.0",
+  "description": "PNGTuber app",
   "main": "main.js",
-  "author": "Wolvox",
+  "author": "ADIvox",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"

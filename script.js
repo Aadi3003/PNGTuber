@@ -13,6 +13,7 @@ let smoothedVolume = 0;
 let lastTalkTime = 0;
 let speakingFrames = 0;
 let running = true;
+let lastVolumeUpdate = 0;
 
 // 🧠 Dynamic sources (now base64!)
 let idleSrc = "assets/idle.png";
@@ -38,6 +39,7 @@ function updateAvatar(isTalking) {
 // 🎤 Start mic
 async function start(deviceId = null) {
   try {
+    // console.log("Starting microphone:", deviceId);
 
     if (streamRef) {
       streamRef.getTracks().forEach(track => track.stop());
@@ -58,6 +60,11 @@ async function start(deviceId = null) {
     };
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    // console.log(
+    //   "Opened:",
+    //   stream.getAudioTracks()[0].getSettings()
+    // );
 
     streamRef = stream;
     currentMicId = deviceId;
@@ -93,6 +100,27 @@ function loop() {
   analyser.getByteFrequencyData(dataArray);
 
   let rawVolume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+  
+  const nowTime = Date.now();
+
+  if (nowTime - lastVolumeUpdate > 50) {
+
+    ipcRenderer.send(
+      'volume-update',
+      Math.min(rawVolume, 100)
+    );
+
+    lastVolumeUpdate = nowTime;
+  }
+
+//   if (Math.random() < 0.01) {
+//   console.log(
+//     "Volume:",
+//     Math.round(rawVolume),
+//     "| Device:",
+//     currentMicId
+//   );
+// }
 
   smoothedVolume = SMOOTHING * smoothedVolume + (1 - SMOOTHING) * rawVolume;
 
@@ -144,7 +172,11 @@ ipcRenderer.on('update-threshold', (_, value) => {
 });
 
 // mic label
+// ipcRenderer.on('change-mic', (_, deviceId) => {
+//   start(deviceId);
+// });
 ipcRenderer.on('change-mic', (_, deviceId) => {
+  // console.log("MIC SWITCH RECEIVED:", deviceId);
   start(deviceId);
 });
 

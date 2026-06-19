@@ -39,6 +39,7 @@ function createWindows() {
   });
 
   avatarWindow.loadFile('index.html');
+//  avatarWindow.webContents.openDevTools();
 
   // 🔄 Load config or defaults
   avatarWindow.webContents.on('did-finish-load', () => {
@@ -61,6 +62,10 @@ function createWindows() {
 
     sendImage('set-idle', idlePath);
     sendImage('set-talk', talkPath);
+  });
+
+  controlWindow.on('closed', () => {
+    process.exit(0);
   });
 }
 
@@ -140,10 +145,22 @@ ipcMain.on('update-talk', (_, filePath) => {
 
 // Mic Threshold / Sensitivity slider
 ipcMain.on('set-threshold', (_, value) => {
-  avatarWindow.webContents.send('update-threshold', value);
+
+  saveConfig({
+    threshold: value
+  });
+
+  avatarWindow.webContents.send(
+    'update-threshold',
+    value
+  );
 });
 
 // Mic label
+ipcMain.handle('get-config', () => {
+  return loadConfig();
+});
+
 ipcMain.handle('get-mics', async () => {
   return avatarWindow.webContents.executeJavaScript(`
     navigator.mediaDevices.enumerateDevices()
@@ -159,8 +176,37 @@ ipcMain.handle('get-mics', async () => {
   `);
 });
 
+ipcMain.on('volume-update', (_, volume) => {
+
+  if (
+    controlWindow &&
+    !controlWindow.isDestroyed()
+  ) {
+    controlWindow.webContents.send(
+      'volume-update',
+      volume
+    );
+  }
+
+});
+
 ipcMain.on('change-mic', (_, deviceId) => {
+  saveConfig({ selectedMic: deviceId });
+
   avatarWindow.webContents.send('change-mic', deviceId);
+});
+
+ipcMain.on('toggle-settings-window', (_, isOpen) => {
+
+  const width = 500;
+
+  const closedHeight = 300;
+  const openHeight = 520;
+
+  controlWindow.setSize(
+    width,
+    isOpen ? openHeight : closedHeight
+  );
 });
 
 // 🔥 SEND IMAGE AS BASE64 (KEY FIX)
@@ -203,3 +249,29 @@ function saveConfig(newData) {
     console.error("Config save error:", err);
   }
 }
+
+// Exits
+app.on('before-quit', () => {
+
+  if (
+    avatarWindow &&
+    !avatarWindow.isDestroyed()
+  ) {
+    avatarWindow.webContents.send('cleanup');
+  }
+
+});
+
+app.on('window-all-closed', () => {
+  console.log("ALL WINDOWS CLOSED");
+
+  app.quit();
+});
+
+app.on('will-quit', () => {
+  console.log("WILL QUIT");
+});
+
+app.on('quit', () => {
+  console.log("QUIT");
+});
